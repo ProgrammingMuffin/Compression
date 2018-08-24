@@ -89,14 +89,30 @@ int pop_prebuffer(LEAF buff[], PAIR p, NODE *iv[], int size) //Here size is buff
 	return j;
 }
 
-void refresh_buffer(NODE *iv[], int size) //input size is 
+int refresh_buffer(LEAF buff[], PAIR p, NODE *iv[], int size) //input size is iv_size 
 {
-	
+	int new_size, i;
+	new_size = pop_prebuffer(buff, p, iv, size);
+	for(i=0;i<new_size;i++)
+	{
+		iv[i]->byte = buff[i].byte;
+		iv[i]->freq = buff[i].freq;
+	}
+	return new_size;
 }
 
 void huffman_compress(NODE *iv[], LEAF buff[], int iv_size, int buff_size)
 {
-
+	PAIR p;
+	int m, n;
+	m = iv_size;
+	n = buff_size;
+	while(m > 1)
+	{
+		p = getMinPair(iv, m);
+		refresh_buffer(iv, m);
+		/*function to update tree*/
+	}
 }
 
 PAIR getMinPair(NODE *v[], int n)
