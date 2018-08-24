@@ -22,34 +22,36 @@ struct Leaf
 	char byte;
 	int freq; //frequency of this halfbyte
 };
-s
+
 struct Pair
 {
-	int i, j;
+	int i, j, sum;
 };
 
 NODE* createNode( );
 void initLeaves(LEAF*, int, NODE**);
 void Insert(NODE*, NODE*);
 int getUniqueLeaves(LEAF*, char*, int);
-void sort_buffer(LEAF*, int);
+void sort_lbuffer(LEAF*, int);
 PAIR getMinPair(NODE**, int);
+int pop_prebuffer(LEAF*, PAIR, NODE**, int);
 
 int main( )
 {
 	LEAF num[8], buff[8];
 	NODE *lv[8], *iv[8]; //lv = leaf vertex, iv = intermediate vertex
 	char str[9];
-	int i, n, size, iv_size;
+	int i, n, size, iv_size, buff_size; //buff_size is for LEAF buff[]. Size is size of LEAF num[]
 	root = 0;
 	n = 8;
 	printf("\n\tEnter String to compress: ");
 	scanf("%s", str);
 	size = getUniqueLeaves(num, str, n);
-	sort_buffer(num, size);
+	sort_lbuffer(num, size); //lbuffer = leaf buffer (also called prebuffer)
 	for(i=0;i<size;i++)
 		printf("%c -- %d\t\t", num[i].byte, num[i].freq);
 	iv_size = size;
+	buff_size = size;
 	return 0;
 }
 
@@ -60,6 +62,42 @@ int main( )
 	else
 		return n*Fact(n-1);
 }*/
+
+int pop_prebuffer(LEAF buff[], PAIR p, NODE *iv[], int size) //Here size is buff[] size.
+{
+	LEAF temp[size];
+	int i, j;
+	j=0;
+	for(i=0;i<size;i++)
+	{
+		if(i != p.i && i != p.j)
+		{
+			temp[j].byte = buff[i].byte;
+			temp[j].freq = buff[i].freq;
+			j++;
+		}
+	}
+	temp[j].byte = 0; /*delete if this causes bugs*/
+	temp[j].freq = p.sum;
+	j++;
+	sort_lbuffer(temp, j);
+	for(i=0;i<j;i++)
+	{
+		buff[i].byte = temp[i].byte;
+		buff[i].freq = temp[i].freq;
+	}
+	return j;
+}
+
+void refresh_buffer(NODE *iv[], int size) //input size is 
+{
+	
+}
+
+void huffman_compress(NODE *iv[], LEAF buff[], int iv_size, int buff_size)
+{
+
+}
 
 PAIR getMinPair(NODE *v[], int n)
 {
@@ -79,6 +117,7 @@ PAIR getMinPair(NODE *v[], int n)
 	}
 	p.i = i;
 	p.j = j;
+	p.sum = min;
 	return p;
 }
 
@@ -141,7 +180,7 @@ NODE* createNode( )
 	return x;
 }
 
-void initLeaves(LEAF l[], int size, NODE *v[])
+void initLeaves(LEAF l[], LEAF buff[], int size, NODE *v[])
 {
 	int i;
 	for(i=0;i<size;i++)
@@ -149,6 +188,8 @@ void initLeaves(LEAF l[], int size, NODE *v[])
 		v[i] = createNode();
 		v[i]->byte = l[i].byte;
 		v[i]->freq = l[i].freq;
+		buff[i].byte = l[i].byte;
+		buff[i].freq = l[i].freq;
 	}
 }
 
@@ -156,5 +197,5 @@ void Insert(NODE *n1, NODE *n2)
 {
 	NODE *p;
 	p = GetNode();
-	p->left = 
+	p->left =  
 }
