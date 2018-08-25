@@ -104,15 +104,27 @@ int refresh_buffer(LEAF buff[], PAIR p, NODE *iv[], int size) //input size is iv
 void huffman_compress(NODE *iv[], LEAF buff[], int iv_size, int buff_size)
 {
 	PAIR p;
+	NODE *n1, *n2;
 	int m, n;
 	m = iv_size;
 	n = buff_size;
 	while(m > 1)
 	{
 		p = getMinPair(iv, m);
-		refresh_buffer(iv, m);
-		/*function to update tree*/
+		n1 = iv[p.i];
+		n2 = iv[p.j];
+		m = refresh_buffer(buff, p, iv, m);
+		m = update_tree(iv, m, n1, n2, p); /*function to update tree*/
 	}
+	root = iv[0]; /*complete the binary tree*/
+}
+
+int update_tree(NODE *iv[], int iv_size, NODE *n1, NODE *n2, PAIR p)
+{
+	int new_size;
+	new_size = insert_vertex(iv, iv_size, n1, n2, p.sum);
+	sort_vbuffer(iv, new_size);
+	return new_size;
 }
 
 PAIR getMinPair(NODE *v[], int n)
@@ -137,7 +149,7 @@ PAIR getMinPair(NODE *v[], int n)
 	return p;
 }
 
-void sort_buffer(LEAF l[], int size)
+void sort_lbuffer(LEAF l[], int size)
 {
 	int i, j;
 	LEAF temp;
@@ -154,6 +166,25 @@ void sort_buffer(LEAF l[], int size)
 		}
 	}
 }
+
+void sort_vbuffer(NODE *iv[], int iv_size)
+{
+        int i, j;
+        NODE *temp;
+        for(i=0;i<iv_size;i++)
+        {
+                for(j=0;j<(iv_size-i-1);j++)
+                {
+                        if(iv[j]->freq > iv[j+1]->freq)
+                        {
+                                temp = iv[j];
+                                iv[j] = iv[j+1];
+                                iv[j+1] = temp;
+                        }
+                }
+        }
+}
+
 
 int getUniqueLeaves(LEAF l[], char *str, int n)
 {
@@ -209,9 +240,16 @@ void initLeaves(LEAF l[], LEAF buff[], int size, NODE *v[])
 	}
 }
 
-void Insert(NODE *n1, NODE *n2)
+int insert_vertex(NODE *v[], int iv_size, NODE *n1, NODE *n2, int f)
 {
-	NODE *p;
-	p = GetNode();
-	p->left =  
+	NODE *x;
+	x = GetNode();
+	x->left = n1;
+	x->right = n2;
+	x->freq = f;
+	n1->parent = x;
+	n2->parent = x;
+	v[iv_size] = x;
+	iv_size++;
+	return iv_size;
 }
