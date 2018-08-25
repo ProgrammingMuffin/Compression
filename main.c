@@ -15,8 +15,6 @@ struct Node
 	NODE *parent;
 };
 
-NODE *root;
-
 struct Leaf
 {
 	char byte;
@@ -28,13 +26,20 @@ struct Pair
 	int i, j, sum;
 };
 
+NODE *root;
+
 NODE* createNode( );
-void initLeaves(LEAF*, int, NODE**);
-void Insert(NODE*, NODE*);
+void initLeaves(LEAF*, LEAF*, int, NODE**);
+int insert_vertex(NODE**, int, NODE*, NODE*, int);
 int getUniqueLeaves(LEAF*, char*, int);
 void sort_lbuffer(LEAF*, int);
+void sort_vbuffer(NODE**, int);
 PAIR getMinPair(NODE**, int);
 int pop_prebuffer(LEAF*, PAIR, NODE**, int);
+int refresh_buffer(LEAF*, PAIR, NODE**, int);
+void huffman_compress(NODE**, LEAF*, int, int);
+int update_tree(NODE**, int, NODE*, NODE*, PAIR);
+
 
 int main( )
 {
@@ -52,6 +57,8 @@ int main( )
 		printf("%c -- %d\t\t", num[i].byte, num[i].freq);
 	iv_size = size;
 	buff_size = size;
+	initLeaves(num, buff, buff_size, iv);
+	huffman_compress(iv, buff, iv_size, buff_size);
 	return 0;
 }
 
@@ -243,7 +250,7 @@ void initLeaves(LEAF l[], LEAF buff[], int size, NODE *v[])
 int insert_vertex(NODE *v[], int iv_size, NODE *n1, NODE *n2, int f)
 {
 	NODE *x;
-	x = GetNode();
+	x = createNode();
 	x->left = n1;
 	x->right = n2;
 	x->freq = f;
