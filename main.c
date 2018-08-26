@@ -34,7 +34,7 @@ int insert_vertex(NODE**, int, NODE*, NODE*, int);
 int getUniqueLeaves(LEAF*, char*, int);
 void sort_lbuffer(LEAF*, int);
 void sort_vbuffer(NODE**, int);
-PAIR getMinPair(NODE**, int);
+void getMinPair(PAIR*, NODE**, int);
 int pop_prebuffer(LEAF*, PAIR, NODE**, int);
 int refresh_buffer(LEAF*, PAIR, NODE**, int);
 void huffman_compress(NODE**, LEAF*, int, int);
@@ -43,12 +43,12 @@ int update_tree(NODE**, int, NODE*, NODE*, PAIR);
 
 int main( )
 {
-	LEAF num[8], buff[8];
-	NODE *lv[8], *iv[8]; //lv = leaf vertex, iv = intermediate vertex
+	LEAF num[32], buff[32];
+	NODE *lv[32], *iv[32]; //lv = leaf vertex, iv = intermediate vertex
 	char str[9];
 	int i, n, size, iv_size, buff_size; //buff_size is for LEAF buff[]. Size is size of LEAF num[]
 	root = 0;
-	n = 8;
+	n = 8; // just check this part once.
 	printf("\n\tEnter String to compress: ");
 	scanf("%s", str);
 	size = getUniqueLeaves(num, str, n);
@@ -79,15 +79,17 @@ int pop_prebuffer(LEAF buff[], PAIR p, NODE *iv[], int size) //Here size is buff
 	{
 		if(i != p.i && i != p.j)
 		{
+			printf("\n\tJ loop is: %d\n", j);
 			temp[j].byte = buff[i].byte;
 			temp[j].freq = buff[i].freq;
 			j++;
 		}
 	}
-	temp[j].byte = 0; /*delete if this causes bugs*/
+	//temp[j].byte = 0; /*delete if this causes bugs*/
 	temp[j].freq = p.sum;
 	j++;
 	sort_lbuffer(temp, j);
+	//printf("\n\tPop Prebuffer J value is: %d\n", j);
 	for(i=0;i<j;i++)
 	{
 		buff[i].byte = temp[i].byte;
@@ -111,19 +113,26 @@ int refresh_buffer(LEAF buff[], PAIR p, NODE *iv[], int size) //input size is iv
 void huffman_compress(NODE *iv[], LEAF buff[], int iv_size, int buff_size)
 {
 	PAIR p;
+	p.i=0;
+	p.j=1;
 	NODE *n1, *n2;
 	int m, n;
 	m = iv_size;
 	n = buff_size;
+	printf("\n\tm value is: %d\n", m);
 	while(m > 1)
 	{
-		p = getMinPair(iv, m);
+		//printf("\n\tInside Huffman Compress Loop\n");
+		getMinPair(&p, iv, m);
+		printf("\n\tPair in huffman function is: %d, %d = %d\n", p.i, p.j, p.sum);
 		n1 = iv[p.i];
 		n2 = iv[p.j];
+		//printf("\n\tn1 = %d\t\tn2 = %d\n", n1->freq, n2->freq);
 		m = refresh_buffer(buff, p, iv, m);
 		m = update_tree(iv, m, n1, n2, p); /*function to update tree*/
 	}
 	root = iv[0]; /*complete the binary tree*/
+	printf("\n\tTree properly constructed\n");
 }
 
 int update_tree(NODE *iv[], int iv_size, NODE *n1, NODE *n2, PAIR p)
@@ -134,26 +143,29 @@ int update_tree(NODE *iv[], int iv_size, NODE *n1, NODE *n2, PAIR p)
 	return new_size;
 }
 
-PAIR getMinPair(NODE *v[], int n)
+void getMinPair(PAIR *p, NODE *v[], int n)
 {
-	int i, j, min;
-	PAIR p;
-	i=0;j=0;
-	min = v[i]->freq + v[j]->freq;
-	for(i=0;i<n;i++)
+	int min;
+	min = (v[0]->freq + v[1]->freq);
+	p->sum = min;
+	p->i = 0;
+	p->j = 1;
+	//printf("\n\tv[0]->freq + v[1]->freq = %d + %d = %d\n", v[0]->freq, v[1]->freq, lol);
+	/*for(i=0;i<n;i++)
 	{
-		for(j=i;j<n;j++)
+		for(j=(i+1);j<n;j++)
 		{
-			if((v[i]->freq + v[j]->freq) < min)
+			if(lol > (v[i]->freq + v[j]->freq))
 			{
-				min = v[i]->freq + v[j]->freq;
+				lol = (v[i]->freq + v[j]->freq);
+				p->i = i;
+				p->j = j;
+				p->sum = lol;
+				printf("\n\tMin value is: %d, %d = %d\n", i, j, lol);
 			}
+			printf("\n\tOutside min pair for loop, min value is: %d\n", p->sum);
 		}
-	}
-	p.i = i;
-	p.j = j;
-	p.sum = min;
-	return p;
+	}*/
 }
 
 void sort_lbuffer(LEAF l[], int size)
@@ -195,23 +207,27 @@ void sort_vbuffer(NODE *iv[], int iv_size)
 
 int getUniqueLeaves(LEAF l[], char *str, int n)
 {
-	int i, j, k;
-	char unique[9];
+	int i, j, k, uni_size;
+	char unique[9]; // unique[9] changed to unique[n+1], just in case.
 	unique[0] = str[0];
-	for(k=0;k<n;k++)
+	uni_size = 1;
+	printf("\n\tValue of n is: %d\n", n);
+	for(k=0;k<n && str[k]!=0;k++)
 	{
-		for(j=0;j<strlen(unique);j++)
+		for(j=0;j<uni_size;j++)
 		{
 			if(str[k] == unique[j])
 				break;
 		}
-		if(j==(strlen(unique)))
+		if(j==uni_size)
 		{
 			unique[j] = str[k];
+			uni_size++;
 		}
 	}
-	j = strlen(unique);
-	for(k=0;k<j;k++)
+	unique[uni_size] = 0;
+	//uni_size = strlen(unique);
+	for(k=0;k<uni_size;k++)
 	{
 		l[k].byte = unique[k];
 		l[k].freq = 0;
@@ -221,7 +237,8 @@ int getUniqueLeaves(LEAF l[], char *str, int n)
 				l[k].freq++;
 		}
 	}
-	return j;
+	printf("\n\t J value is %d @ getUniqueLeaves( );\n", uni_size);
+	return uni_size;
 }
 
 NODE* createNode( )
@@ -257,6 +274,6 @@ int insert_vertex(NODE *v[], int iv_size, NODE *n1, NODE *n2, int f)
 	n1->parent = x;
 	n2->parent = x;
 	v[iv_size] = x;
-	iv_size++;
+	iv_size--;
 	return iv_size;
 }
